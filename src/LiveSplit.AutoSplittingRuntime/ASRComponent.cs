@@ -1,14 +1,11 @@
-﻿using LiveSplit.Model;
-using LiveSplit.Options;
-using LiveSplit.UI;
-using LiveSplit.UI.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows.Forms;
 using System.Xml;
+
+using LiveSplit.Model;
+using LiveSplit.UI;
+using LiveSplit.UI.Components;
+
 using Timer = System.Timers.Timer;
 
 namespace LiveSplit.AutoSplittingRuntime
@@ -117,7 +114,9 @@ namespace LiveSplit.AutoSplittingRuntime
                         double tickRate = settings.runtime.TickRate().TotalMilliseconds;
 
                         if (updateTimer != null && tickRate != updateTimer.Interval)
+                        {
                             updateTimer.Interval = tickRate;
+                        }
                     }
                 });
             }
@@ -130,9 +129,13 @@ namespace LiveSplit.AutoSplittingRuntime
         private void InvokeIfNeeded(Action x)
         {
             if (parentForm != null && parentForm.InvokeRequired)
+            {
                 parentForm.Invoke(x);
+            }
             else
+            {
                 x();
+            }
         }
     }
 }

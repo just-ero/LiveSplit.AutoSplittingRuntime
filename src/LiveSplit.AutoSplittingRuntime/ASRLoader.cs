@@ -21,10 +21,12 @@ namespace LiveSplit.AutoSplittingRuntime
             ~LibraryUnloader()
             {
                 if (handle != null)
+                {
                     FreeLibrary(handle);
+                }
             }
 
-            private void* handle;
+            private readonly void* handle;
 
         }
 
@@ -40,16 +42,22 @@ namespace LiveSplit.AutoSplittingRuntime
             string path;
 
             if (IntPtr.Size == 8)
+            {
                 path = @"Components\x64\asr_capi.dll";
+            }
             else
+            {
                 path = @"Components\x86\asr_capi.dll";
+            }
 
             unsafe
             {
                 void* handle = LoadLibrary(path);
 
                 if (handle == null)
+                {
                     throw new DllNotFoundException("Unable to load the native ASR library: " + path);
+                }
 
                 unloader = new LibraryUnloader(handle);
             }

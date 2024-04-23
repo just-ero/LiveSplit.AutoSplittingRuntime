@@ -1,11 +1,8 @@
-﻿using LiveSplit.AutoSplittingRuntime;
+﻿using System;
+
+using LiveSplit.AutoSplittingRuntime;
 using LiveSplit.Model;
 using LiveSplit.UI.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 [assembly: ComponentFactory(typeof(ASRFactory))]
 
@@ -22,7 +19,14 @@ namespace LiveSplit.AutoSplittingRuntime
         public string UpdateURL => "http://livesplit.org/update/";
         public string XMLURL => "http://livesplit.org/update/Components/update.LiveSplit.AutoSplittingRuntime.xml";
 
-        public IComponent Create(LiveSplitState state) => new ASRComponent(state);
-        public IComponent Create(LiveSplitState state, string script) => new ASRComponent(state, script);
+        public IComponent Create(LiveSplitState state)
+        {
+            return new ASRComponent(state);
+        }
+
+        public IComponent Create(LiveSplitState state, string script)
+        {
+            return new ASRComponent(state, script);
+        }
     }
 }

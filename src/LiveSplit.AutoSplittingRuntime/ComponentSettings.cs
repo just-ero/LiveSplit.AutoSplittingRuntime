@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Windows.Forms;
 using System.Xml;
-using LiveSplit.UI;
-using System.IO;
-using LiveSplit.Options;
+
 using LiveSplit.Model;
-using System.Globalization;
+using LiveSplit.Options;
+using LiveSplit.UI;
 
 namespace LiveSplit.AutoSplittingRuntime
 {
@@ -21,11 +22,11 @@ namespace LiveSplit.AutoSplittingRuntime
                 if (value != scriptPath)
                 {
                     scriptPath = value;
-                    this.ReloadRuntime(null);
+                    ReloadRuntime(null);
                 }
             }
         }
-        private bool fixedScriptPath = false;
+        private readonly bool fixedScriptPath = false;
 
         public Runtime runtime = null;
 
@@ -54,7 +55,7 @@ namespace LiveSplit.AutoSplittingRuntime
 
             scriptPath = "";
 
-            this.txtScriptPath.DataBindings.Add("Text", this, "ScriptPath", false,
+            txtScriptPath.DataBindings.Add("Text", this, "ScriptPath", false,
                 DataSourceUpdateMode.OnPropertyChanged);
 
             getState = () =>
@@ -66,6 +67,7 @@ namespace LiveSplit.AutoSplittingRuntime
                     case TimerPhase.Paused: return 2;
                     case TimerPhase.Ended: return 3;
                 }
+
                 return 0;
             };
             start = () => model.Start();
@@ -81,10 +83,10 @@ namespace LiveSplit.AutoSplittingRuntime
         public ComponentSettings(TimerModel model, string scriptPath)
             : this(model)
         {
-            this.ScriptPath = scriptPath;
-            this.fixedScriptPath = true;
-            this.btnSelectFile.Enabled = false;
-            this.txtScriptPath.Enabled = false;
+            ScriptPath = scriptPath;
+            fixedScriptPath = true;
+            btnSelectFile.Enabled = false;
+            txtScriptPath.Enabled = false;
         }
 
         public void ReloadRuntime(SettingsMap settingsMap)
@@ -128,9 +130,9 @@ namespace LiveSplit.AutoSplittingRuntime
 
         public void BuildTree()
         {
-            this.settingsTable.Controls.Clear();
-            this.settingsTable.RowCount = 0;
-            this.settingsTable.RowStyles.Clear();
+            settingsTable.Controls.Clear();
+            settingsTable.RowCount = 0;
+            settingsTable.RowStyles.Clear();
 
             if (runtime != null)
             {
@@ -153,93 +155,94 @@ namespace LiveSplit.AutoSplittingRuntime
                     switch (ty)
                     {
                         case "bool":
+                        {
+                            var checkbox = new CheckBox
                             {
-                                var checkbox = new CheckBox
-                                {
-                                    Text = desc,
-                                    Tag = widgets.GetKey(i),
-                                    Margin = new Padding(margin, 0, 0, 0),
-                                    Checked = widgets.GetBool(i, settingsMap)
-                                };
-                                checkbox.CheckedChanged += Checkbox_CheckedChanged;
-                                checkbox.Anchor |= AnchorStyles.Right;
-                                this.toolTip.SetToolTip(checkbox, tooltip);
-                                this.settingsTable.Controls.Add(checkbox, 0, this.settingsTable.RowStyles.Count);
-                                this.settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, checkbox.Height));
-                                break;
-                            }
+                                Text = desc,
+                                Tag = widgets.GetKey(i),
+                                Margin = new Padding(margin, 0, 0, 0),
+                                Checked = widgets.GetBool(i, settingsMap)
+                            };
+                            checkbox.CheckedChanged += Checkbox_CheckedChanged;
+                            checkbox.Anchor |= AnchorStyles.Right;
+                            toolTip.SetToolTip(checkbox, tooltip);
+                            settingsTable.Controls.Add(checkbox, 0, settingsTable.RowStyles.Count);
+                            settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, checkbox.Height));
+                            break;
+                        }
                         case "title":
+                        {
+                            var headingLevel = (int)widgets.GetHeadingLevel(i);
+                            margin = 20 * headingLevel;
+                            var label = new Label
                             {
-                                var headingLevel = (int)widgets.GetHeadingLevel(i);
-                                margin = 20 * headingLevel;
-                                var label = new Label
-                                {
-                                    Margin = new Padding(margin, 3, 0, 0),
-                                    Text = desc
-                                };
-                                margin += 20;
-                                label.Font = new Font(label.Font.FontFamily, 10, FontStyle.Underline);
-                                label.Anchor |= AnchorStyles.Right;
-                                this.toolTip.SetToolTip(label, tooltip);
-                                this.settingsTable.Controls.Add(label, 0, this.settingsTable.RowStyles.Count);
-                                this.settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, label.Height));
-                                break;
-                            }
+                                Margin = new Padding(margin, 3, 0, 0),
+                                Text = desc
+                            };
+                            margin += 20;
+                            label.Font = new Font(label.Font.FontFamily, 10, FontStyle.Underline);
+                            label.Anchor |= AnchorStyles.Right;
+                            toolTip.SetToolTip(label, tooltip);
+                            settingsTable.Controls.Add(label, 0, settingsTable.RowStyles.Count);
+                            settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, label.Height));
+                            break;
+                        }
                         case "choice":
+                        {
+                            var label = new Label
                             {
-                                var label = new Label
-                                {
-                                    Text = desc,
-                                    Margin = new Padding(margin, 0, 0, 0)
-                                };
-                                label.Anchor |= AnchorStyles.Right;
-                                this.toolTip.SetToolTip(label, tooltip);
-                                this.settingsTable.Controls.Add(label, 0, this.settingsTable.RowStyles.Count);
-                                this.settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, label.Height));
+                                Text = desc,
+                                Margin = new Padding(margin, 0, 0, 0)
+                            };
+                            label.Anchor |= AnchorStyles.Right;
+                            toolTip.SetToolTip(label, tooltip);
+                            settingsTable.Controls.Add(label, 0, settingsTable.RowStyles.Count);
+                            settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, label.Height));
 
-                                var combo = new ComboBox
+                            var combo = new ComboBox
+                            {
+                                Tag = widgets.GetKey(i),
+                                Margin = new Padding(margin, 0, 0, 0),
+                                DropDownStyle = ComboBoxStyle.DropDownList
+                            };
+                            combo.Anchor |= AnchorStyles.Right;
+                            toolTip.SetToolTip(combo, tooltip);
+                            var choicesLen = widgets.GetChoiceOptionsLength(i);
+                            for (ulong choiceIndex = 0; choiceIndex < choicesLen; choiceIndex++)
+                            {
+                                var choice = new Choice
                                 {
-                                    Tag = widgets.GetKey(i),
-                                    Margin = new Padding(margin, 0, 0, 0),
-                                    DropDownStyle = ComboBoxStyle.DropDownList
+                                    description = widgets.GetChoiceOptionDescription(i, choiceIndex),
+                                    key = widgets.GetChoiceOptionKey(i, choiceIndex)
                                 };
-                                combo.Anchor |= AnchorStyles.Right;
-                                this.toolTip.SetToolTip(combo, tooltip);
-                                var choicesLen = widgets.GetChoiceOptionsLength(i);
-                                for (ulong choiceIndex = 0; choiceIndex < choicesLen; choiceIndex++)
-                                {
-                                    var choice = new Choice
-                                    {
-                                        description = widgets.GetChoiceOptionDescription(i, choiceIndex),
-                                        key = widgets.GetChoiceOptionKey(i, choiceIndex)
-                                    };
-                                    combo.Items.Add(choice);
-                                }
-                                combo.SelectedIndex = (int)widgets.GetChoiceCurrentIndex(i, settingsMap);
-                                combo.SelectedIndexChanged += Combo_SelectedIndexChanged;
-                                this.settingsTable.Controls.Add(combo, 0, this.settingsTable.RowStyles.Count);
-                                this.settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, combo.Height + 5));
-                                break;
+                                combo.Items.Add(choice);
                             }
+
+                            combo.SelectedIndex = (int)widgets.GetChoiceCurrentIndex(i, settingsMap);
+                            combo.SelectedIndexChanged += Combo_SelectedIndexChanged;
+                            settingsTable.Controls.Add(combo, 0, settingsTable.RowStyles.Count);
+                            settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, combo.Height + 5));
+                            break;
+                        }
                         case "file-select":
+                        {
+                            var button = new Button
                             {
-                                var button = new Button
-                                {
-                                    Tag = new FileSelectInfo(widgets.GetKey(i), widgets.GetFileSelectFilter(i)),
-                                    Text = desc,
-                                    Margin = new Padding(margin, 0, 0, 0),
-                                };
-                                button.Click += FileSelect_Click;
-                                button.Anchor |= AnchorStyles.Right;
-                                this.toolTip.SetToolTip(button, tooltip);
-                                this.settingsTable.Controls.Add(button, 0, this.settingsTable.RowStyles.Count);
-                                this.settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, button.Height));
-                                break;
-                            }
+                                Tag = new FileSelectInfo(widgets.GetKey(i), widgets.GetFileSelectFilter(i)),
+                                Text = desc,
+                                Margin = new Padding(margin, 0, 0, 0),
+                            };
+                            button.Click += FileSelect_Click;
+                            button.Anchor |= AnchorStyles.Right;
+                            toolTip.SetToolTip(button, tooltip);
+                            settingsTable.Controls.Add(button, 0, settingsTable.RowStyles.Count);
+                            settingsTable.RowStyles.Add(new RowStyle(SizeType.Absolute, button.Height));
+                            break;
+                        }
                         default:
-                            {
-                                break;
-                            }
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -248,8 +251,16 @@ namespace LiveSplit.AutoSplittingRuntime
         private void Combo_SelectedIndexChanged(object sender, EventArgs e)
         {
             var combo = (ComboBox)sender;
-            if (!(combo.Tag is string)) return;
-            if (!(combo.SelectedItem is Choice)) return;
+            if (!(combo.Tag is string))
+            {
+                return;
+            }
+
+            if (!(combo.SelectedItem is Choice))
+            {
+                return;
+            }
+
             var choice = (Choice)combo.SelectedItem;
 
             if (runtime != null)
@@ -264,7 +275,11 @@ namespace LiveSplit.AutoSplittingRuntime
         private void FileSelect_Click(object sender, EventArgs e)
         {
             var button = (Button)sender;
-            if (!(button.Tag is FileSelectInfo)) return;
+            if (!(button.Tag is FileSelectInfo))
+            {
+                return;
+            }
+
             FileSelectInfo tag = (FileSelectInfo)button.Tag;
             var dialog = new OpenFileDialog()
             {
@@ -285,6 +300,7 @@ namespace LiveSplit.AutoSplittingRuntime
                     }
                 }
             }
+
             if (File.Exists(oldWindowsPath))
             {
                 dialog.InitialDirectory = Path.GetDirectoryName(oldWindowsPath);
@@ -305,7 +321,7 @@ namespace LiveSplit.AutoSplittingRuntime
             }
         }
 
-        class Choice
+        private class Choice
         {
             public string key;
             public string description;
@@ -316,7 +332,7 @@ namespace LiveSplit.AutoSplittingRuntime
             }
         }
 
-        struct FileSelectInfo
+        private readonly struct FileSelectInfo
         {
             public FileSelectInfo(string k, string f)
             {
@@ -330,7 +346,10 @@ namespace LiveSplit.AutoSplittingRuntime
         private void Checkbox_CheckedChanged(object sender, EventArgs e)
         {
             var checkbox = (CheckBox)sender;
-            if (!(checkbox.Tag is string)) return;
+            if (!(checkbox.Tag is string))
+            {
+                return;
+            }
 
             if (runtime != null)
             {
@@ -339,7 +358,6 @@ namespace LiveSplit.AutoSplittingRuntime
                 previousMap = runtime.GetSettingsMap();
                 prev?.Dispose();
             }
-
         }
 
         public XmlNode GetSettings(XmlDocument document)
@@ -347,10 +365,11 @@ namespace LiveSplit.AutoSplittingRuntime
             XmlElement settings_node = document.CreateElement("Settings");
 
             settings_node.AppendChild(SettingsHelper.ToElement(document, "Version", "1.0"));
-            if (!this.fixedScriptPath)
+            if (!fixedScriptPath)
             {
                 settings_node.AppendChild(SettingsHelper.ToElement(document, "ScriptPath", scriptPath));
             }
+
             AppendCustomSettingsToXml(document, settings_node);
 
             return settings_node;
@@ -364,16 +383,17 @@ namespace LiveSplit.AutoSplittingRuntime
             if (!element.IsEmpty)
             {
                 var settingsMap = ParseCustomSettingsFromXml(element);
-                if (!this.fixedScriptPath)
+                if (!fixedScriptPath)
                 {
                     var newScriptPath = SettingsHelper.ParseString(element["ScriptPath"], string.Empty);
                     if (newScriptPath != scriptPath)
                     {
                         scriptPath = newScriptPath;
-                        this.ReloadRuntime(settingsMap);
+                        ReloadRuntime(settingsMap);
                         return;
                     }
                 }
+
                 if (runtime != null)
                 {
                     var prev = previousMap;
@@ -382,6 +402,7 @@ namespace LiveSplit.AutoSplittingRuntime
                     runtime.SetSettingsMap(previousMap);
                     return;
                 }
+
                 settingsMap?.Dispose();
             }
         }
@@ -446,42 +467,41 @@ namespace LiveSplit.AutoSplittingRuntime
             switch (type)
             {
                 case "map":
-                    {
-                        BuildMap(document, element, value.GetMap());
-                        break;
-                    }
+                {
+                    BuildMap(document, element, value.GetMap());
+                    break;
+                }
                 case "list":
-                    {
-                        BuildList(document, element, value.GetList());
-                        break;
-                    }
+                {
+                    BuildList(document, element, value.GetList());
+                    break;
+                }
                 case "bool":
-                    {
-                        element.InnerText = value.GetBool().ToString(CultureInfo.InvariantCulture);
-                        break;
-                    }
+                {
+                    element.InnerText = value.GetBool().ToString(CultureInfo.InvariantCulture);
+                    break;
+                }
                 case "i64":
-                    {
-                        element.InnerText = value.GetI64().ToString(CultureInfo.InvariantCulture);
-                        break;
-                    }
+                {
+                    element.InnerText = value.GetI64().ToString(CultureInfo.InvariantCulture);
+                    break;
+                }
                 case "f64":
-                    {
-                        element.InnerText = value.GetF64().ToString(CultureInfo.InvariantCulture);
-                        break;
-                    }
+                {
+                    element.InnerText = value.GetF64().ToString(CultureInfo.InvariantCulture);
+                    break;
+                }
                 case "string":
-                    {
-                        var attribute = SettingsHelper.ToAttribute(document, "value", value.GetString());
-                        element.Attributes.Append(attribute);
-                        break;
-                    }
+                {
+                    var attribute = SettingsHelper.ToAttribute(document, "value", value.GetString());
+                    element.Attributes.Append(attribute);
+                    break;
+                }
                 default:
-                    {
-                        return null;
-                    }
+                {
+                    return null;
+                }
             }
-
 
             return element;
         }
@@ -516,7 +536,9 @@ namespace LiveSplit.AutoSplittingRuntime
             foreach (XmlElement element in mapNode.ChildNodes)
             {
                 if (element.Name != "Setting")
+                {
                     return null;
+                }
 
                 string id = element.Attributes["id"].Value;
 
@@ -544,7 +566,9 @@ namespace LiveSplit.AutoSplittingRuntime
             foreach (XmlElement element in listNode.ChildNodes)
             {
                 if (element.Name != "Setting")
+                {
                     return null;
+                }
 
                 var value = ParseValue(element);
                 if (value == null)
@@ -589,6 +613,7 @@ namespace LiveSplit.AutoSplittingRuntime
                 {
                     return null;
                 }
+
                 return new SettingValue(value);
             }
             else if (type == "list")
@@ -598,6 +623,7 @@ namespace LiveSplit.AutoSplittingRuntime
                 {
                     return null;
                 }
+
                 return new SettingValue(value);
             }
             else
@@ -620,7 +646,7 @@ namespace LiveSplit.AutoSplittingRuntime
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                scriptPath = this.txtScriptPath.Text = dialog.FileName;
+                scriptPath = txtScriptPath.Text = dialog.FileName;
             }
         }
 

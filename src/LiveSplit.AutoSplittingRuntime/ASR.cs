@@ -1,11 +1,7 @@
-﻿using LiveSplitCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
+
 using TimeSpan = System.TimeSpan;
 
 namespace LiveSplit.AutoSplittingRuntime
@@ -30,7 +26,7 @@ namespace LiveSplit.AutoSplittingRuntime
         {
             if (ptr != IntPtr.Zero)
             {
-                ASRNative.Runtime_drop(this.ptr);
+                ASRNative.Runtime_drop(ptr);
                 ptr = IntPtr.Zero;
             }
         }
@@ -63,7 +59,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 settingsMap.ptr = IntPtr.Zero;
             }
-            this.ptr = ASRNative.Runtime_new(
+
+            ptr = ASRNative.Runtime_new(
                 path,
                 settingsMapPtr,
                 state,
@@ -77,7 +74,7 @@ namespace LiveSplit.AutoSplittingRuntime
                 resumeGameTime,
                 log
             );
-            if (this.ptr == IntPtr.Zero)
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't load the module provided.");
             }
@@ -90,7 +87,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return false;
             }
-            return ASRNative.Runtime_step(this.ptr);
+
+            return ASRNative.Runtime_step(ptr);
         }
 
         public TimeSpan TickRate()
@@ -99,7 +97,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return TimeSpan.Zero;
             }
-            return new TimeSpan((long)ASRNative.Runtime_tick_rate(this.ptr));
+
+            return new TimeSpan((long)ASRNative.Runtime_tick_rate(ptr));
         }
 
         public Widgets GetSettingsWidgets()
@@ -108,7 +107,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            return new Widgets(ASRNative.Runtime_get_settings_widgets(this.ptr));
+
+            return new Widgets(ASRNative.Runtime_get_settings_widgets(ptr));
         }
 
         public void SettingsMapSetBool(string key, bool value)
@@ -117,7 +117,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return;
             }
-            ASRNative.Runtime_settings_map_set_bool(this.ptr, key, value ? (byte)1 : (byte)0);
+
+            ASRNative.Runtime_settings_map_set_bool(ptr, key, value ? (byte)1 : (byte)0);
         }
 
         public void SettingsMapSetString(string key, string value)
@@ -126,7 +127,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return;
             }
-            ASRNative.Runtime_settings_map_set_string(this.ptr, key, value);
+
+            ASRNative.Runtime_settings_map_set_string(ptr, key, value);
         }
 
         public SettingsMap GetSettingsMap()
@@ -135,7 +137,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            return new SettingsMap(ASRNative.Runtime_get_settings_map(this.ptr));
+
+            return new SettingsMap(ASRNative.Runtime_get_settings_map(ptr));
         }
 
         public void SetSettingsMap(SettingsMap settingsMap)
@@ -144,13 +147,15 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return;
             }
+
             var settingsMapPtr = settingsMap.ptr;
             if (settingsMapPtr == IntPtr.Zero)
             {
                 return;
             }
+
             settingsMap.ptr = IntPtr.Zero;
-            ASRNative.Runtime_set_settings_map(this.ptr, settingsMapPtr);
+            ASRNative.Runtime_set_settings_map(ptr, settingsMapPtr);
         }
 
         public bool AreSettingsChanged(SettingsMapRef previousSettingsMap, WidgetsRef previousWidgets)
@@ -159,15 +164,18 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return false;
             }
+
             if (previousSettingsMap.ptr == IntPtr.Zero)
             {
                 return false;
             }
+
             if (previousWidgets.ptr == IntPtr.Zero)
             {
                 return false;
             }
-            return ASRNative.Runtime_are_settings_changed(this.ptr, previousSettingsMap.ptr, previousWidgets.ptr) != 0;
+
+            return ASRNative.Runtime_are_settings_changed(ptr, previousSettingsMap.ptr, previousWidgets.ptr) != 0;
         }
     }
 
@@ -184,7 +192,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return (ulong)ASRNative.SettingsMap_len(this.ptr);
+
+            return (ulong)ASRNative.SettingsMap_len(ptr);
         }
         public string GetKey(ulong index)
         {
@@ -192,7 +201,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.SettingsMap_get_key(this.ptr, (UIntPtr)index);
+
+            return ASRNative.SettingsMap_get_key(ptr, (UIntPtr)index);
         }
         public SettingValueRef GetValue(ulong index)
         {
@@ -200,7 +210,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            return new SettingValueRef(ASRNative.SettingsMap_get_value(this.ptr, (UIntPtr)index));
+
+            return new SettingValueRef(ASRNative.SettingsMap_get_value(ptr, (UIntPtr)index));
         }
         public SettingValueRef KeyGetValue(string key)
         {
@@ -208,7 +219,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            var valuePtr = ASRNative.SettingsMap_get_value_by_key(this.ptr, key);
+
+            var valuePtr = ASRNative.SettingsMap_get_value_by_key(ptr, key);
             if (valuePtr != IntPtr.Zero)
             {
                 return new SettingValueRef(valuePtr);
@@ -229,13 +241,15 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return;
             }
+
             var valuePtr = value.ptr;
             if (valuePtr == IntPtr.Zero)
             {
                 return;
             }
+
             value.ptr = IntPtr.Zero;
-            ASRNative.SettingsMap_insert(this.ptr, key, valuePtr);
+            ASRNative.SettingsMap_insert(ptr, key, valuePtr);
         }
     }
 
@@ -245,7 +259,7 @@ namespace LiveSplit.AutoSplittingRuntime
         {
             if (ptr != IntPtr.Zero)
             {
-                ASRNative.SettingsMap_drop(this.ptr);
+                ASRNative.SettingsMap_drop(ptr);
                 ptr = IntPtr.Zero;
             }
         }
@@ -260,8 +274,8 @@ namespace LiveSplit.AutoSplittingRuntime
         }
         public SettingsMap() : base(IntPtr.Zero)
         {
-            this.ptr = ASRNative.SettingsMap_new();
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingsMap_new();
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the settings map.");
             }
@@ -282,7 +296,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return (ulong)ASRNative.SettingsList_len(this.ptr);
+
+            return (ulong)ASRNative.SettingsList_len(ptr);
         }
         public SettingValueRef Get(ulong index)
         {
@@ -290,7 +305,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            return new SettingValueRef(ASRNative.SettingsList_get(this.ptr, (UIntPtr)index));
+
+            return new SettingValueRef(ASRNative.SettingsList_get(ptr, (UIntPtr)index));
         }
     }
 
@@ -303,13 +319,15 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return;
             }
+
             var valuePtr = value.ptr;
             if (valuePtr == IntPtr.Zero)
             {
                 return;
             }
+
             value.ptr = IntPtr.Zero;
-            ASRNative.SettingsList_push(this.ptr, valuePtr);
+            ASRNative.SettingsList_push(ptr, valuePtr);
         }
     }
 
@@ -319,7 +337,7 @@ namespace LiveSplit.AutoSplittingRuntime
         {
             if (ptr != IntPtr.Zero)
             {
-                ASRNative.SettingsList_drop(this.ptr);
+                ASRNative.SettingsList_drop(ptr);
                 ptr = IntPtr.Zero;
             }
         }
@@ -334,8 +352,8 @@ namespace LiveSplit.AutoSplittingRuntime
         }
         public SettingsList() : base(IntPtr.Zero)
         {
-            this.ptr = ASRNative.SettingsList_new();
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingsList_new();
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the settings list.");
             }
@@ -356,7 +374,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            var ty = ASRNative.SettingValue_get_type(this.ptr);
+
+            var ty = ASRNative.SettingValue_get_type(ptr);
             switch ((ulong)ty)
             {
                 case 1: return "map";
@@ -374,7 +393,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            return new SettingsMapRef(ASRNative.SettingValue_get_map(this.ptr));
+
+            return new SettingsMapRef(ASRNative.SettingValue_get_map(ptr));
         }
         public SettingsListRef GetList()
         {
@@ -382,7 +402,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return null;
             }
-            return new SettingsListRef(ASRNative.SettingValue_get_list(this.ptr));
+
+            return new SettingsListRef(ASRNative.SettingValue_get_list(ptr));
         }
         public bool GetBool()
         {
@@ -390,7 +411,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return false;
             }
-            return ASRNative.SettingValue_get_bool(this.ptr) != 0;
+
+            return ASRNative.SettingValue_get_bool(ptr) != 0;
         }
         public long GetI64()
         {
@@ -398,7 +420,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return ASRNative.SettingValue_get_i64(this.ptr);
+
+            return ASRNative.SettingValue_get_i64(ptr);
         }
         public double GetF64()
         {
@@ -406,7 +429,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return ASRNative.SettingValue_get_f64(this.ptr);
+
+            return ASRNative.SettingValue_get_f64(ptr);
         }
         public string GetString()
         {
@@ -414,7 +438,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.SettingValue_get_string(this.ptr);
+
+            return ASRNative.SettingValue_get_string(ptr);
         }
     }
 
@@ -429,7 +454,7 @@ namespace LiveSplit.AutoSplittingRuntime
         {
             if (ptr != IntPtr.Zero)
             {
-                ASRNative.SettingValue_drop(this.ptr);
+                ASRNative.SettingValue_drop(ptr);
                 ptr = IntPtr.Zero;
             }
         }
@@ -444,32 +469,32 @@ namespace LiveSplit.AutoSplittingRuntime
         }
         public SettingValue(bool value) : base(IntPtr.Zero)
         {
-            this.ptr = ASRNative.SettingValue_new_bool(value ? (byte)1 : (byte)0);
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingValue_new_bool(value ? (byte)1 : (byte)0);
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
         }
         public SettingValue(long value) : base(IntPtr.Zero)
         {
-            this.ptr = ASRNative.SettingValue_new_i64(value);
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingValue_new_i64(value);
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
         }
         public SettingValue(double value) : base(IntPtr.Zero)
         {
-            this.ptr = ASRNative.SettingValue_new_f64(value);
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingValue_new_f64(value);
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
         }
         public SettingValue(string value) : base(IntPtr.Zero)
         {
-            this.ptr = ASRNative.SettingValue_new_string(value);
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingValue_new_string(value);
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
@@ -481,9 +506,10 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
+
             value.ptr = IntPtr.Zero;
-            this.ptr = ASRNative.SettingValue_new_map(valuePtr);
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingValue_new_map(valuePtr);
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
@@ -495,9 +521,10 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
+
             value.ptr = IntPtr.Zero;
-            this.ptr = ASRNative.SettingValue_new_list(valuePtr);
-            if (this.ptr == IntPtr.Zero)
+            ptr = ASRNative.SettingValue_new_list(valuePtr);
+            if (ptr == IntPtr.Zero)
             {
                 throw new ArgumentException("Couldn't create the setting value.");
             }
@@ -519,7 +546,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return (ulong)ASRNative.Widgets_len(this.ptr);
+
+            return (ulong)ASRNative.Widgets_len(ptr);
         }
 
         public string GetKey(ulong index)
@@ -528,7 +556,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.Widgets_get_key(this.ptr, (UIntPtr)index);
+
+            return ASRNative.Widgets_get_key(ptr, (UIntPtr)index);
         }
 
         public string GetDescription(ulong index)
@@ -537,7 +566,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.Widgets_get_description(this.ptr, (UIntPtr)index);
+
+            return ASRNative.Widgets_get_description(ptr, (UIntPtr)index);
         }
 
         public string GetTooltip(ulong index)
@@ -546,7 +576,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.Widgets_get_tooltip(this.ptr, (UIntPtr)index);
+
+            return ASRNative.Widgets_get_tooltip(ptr, (UIntPtr)index);
         }
 
         public uint GetHeadingLevel(ulong index)
@@ -555,7 +586,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return ASRNative.Widgets_get_heading_level(this.ptr, (UIntPtr)index);
+
+            return ASRNative.Widgets_get_heading_level(ptr, (UIntPtr)index);
         }
 
         public string GetType(ulong index)
@@ -564,7 +596,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            var ty = ASRNative.Widgets_get_type(this.ptr, (UIntPtr)index);
+
+            var ty = ASRNative.Widgets_get_type(ptr, (UIntPtr)index);
             switch ((ulong)ty)
             {
                 case 1: return "bool";
@@ -581,11 +614,13 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return false;
             }
+
             if (settingsMap.ptr == IntPtr.Zero)
             {
                 return false;
             }
-            return ASRNative.Widgets_get_bool(this.ptr, (UIntPtr)index, settingsMap.ptr) != 0;
+
+            return ASRNative.Widgets_get_bool(ptr, (UIntPtr)index, settingsMap.ptr) != 0;
         }
 
         public ulong GetChoiceCurrentIndex(ulong index, SettingsMapRef settingsMap)
@@ -594,11 +629,13 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
+
             if (settingsMap.ptr == IntPtr.Zero)
             {
                 return 0;
             }
-            return (ulong)ASRNative.Widgets_get_choice_current_index(this.ptr, (UIntPtr)index, settingsMap.ptr);
+
+            return (ulong)ASRNative.Widgets_get_choice_current_index(ptr, (UIntPtr)index, settingsMap.ptr);
         }
 
         public ulong GetChoiceOptionsLength(ulong index)
@@ -607,7 +644,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return 0;
             }
-            return (ulong)ASRNative.Widgets_get_choice_options_len(this.ptr, (UIntPtr)index);
+
+            return (ulong)ASRNative.Widgets_get_choice_options_len(ptr, (UIntPtr)index);
         }
 
         public string GetChoiceOptionKey(ulong index, ulong optionIndex)
@@ -616,7 +654,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.Widgets_get_choice_option_key(this.ptr, (UIntPtr)index, (UIntPtr)optionIndex);
+
+            return ASRNative.Widgets_get_choice_option_key(ptr, (UIntPtr)index, (UIntPtr)optionIndex);
         }
 
         public string GetChoiceOptionDescription(ulong index, ulong optionIndex)
@@ -625,7 +664,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.Widgets_get_choice_option_description(this.ptr, (UIntPtr)index, (UIntPtr)optionIndex);
+
+            return ASRNative.Widgets_get_choice_option_description(ptr, (UIntPtr)index, (UIntPtr)optionIndex);
         }
 
         public string GetFileSelectFilter(ulong index)
@@ -634,7 +674,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 return "";
             }
-            return ASRNative.Widgets_get_file_select_filter(this.ptr, (UIntPtr)index);
+
+            return ASRNative.Widgets_get_file_select_filter(ptr, (UIntPtr)index);
         }
     }
 
@@ -649,7 +690,7 @@ namespace LiveSplit.AutoSplittingRuntime
         {
             if (ptr != IntPtr.Zero)
             {
-                ASRNative.Widgets_drop(this.ptr);
+                ASRNative.Widgets_drop(ptr);
                 ptr = IntPtr.Zero;
             }
         }
@@ -845,8 +886,8 @@ namespace LiveSplit.AutoSplittingRuntime
             {
                 Marshal.FreeHGlobal(handle);
             }
+
             return true;
         }
     }
-
 }

@@ -1,9 +1,7 @@
-﻿using LiveSplit.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using LiveSplit.Options;
 
 namespace LiveSplit.AutoSplittingRuntime
 {
@@ -55,11 +53,19 @@ namespace LiveSplit.AutoSplittingRuntime
         public void AddSetting(string name, bool default_value, string description, string parent)
         {
             if (description == null)
+            {
                 description = name;
+            }
+
             if (parent != null && !Settings.ContainsKey(parent))
+            {
                 throw new ArgumentException($"Parent for setting '{name}' is not a setting: {parent}");
+            }
+
             if (Settings.ContainsKey(name))
+            {
                 throw new ArgumentException($"Setting '{name}' was already added");
+            }
 
             var setting = new ASRSetting(name, default_value, description, parent);
             Settings.Add(name, setting);
@@ -71,7 +77,9 @@ namespace LiveSplit.AutoSplittingRuntime
             // Don't cause error if setting doesn't exist, but still inform script
             // author since that usually shouldn't happen.
             if (Settings.ContainsKey(name))
+            {
                 return GetSettingValueRecursive(Settings[name]);
+            }
 
             Log.Info("[ASR] Custom Setting Key doesn't exist: " + name);
 
@@ -86,7 +94,9 @@ namespace LiveSplit.AutoSplittingRuntime
         public bool GetBasicSettingValue(string name)
         {
             if (BasicSettings.ContainsKey(name))
+            {
                 return BasicSettings[name].Value;
+            }
 
             return false;
         }
@@ -96,17 +106,20 @@ namespace LiveSplit.AutoSplittingRuntime
             return BasicSettings.ContainsKey(name);
         }
 
-
         /// <summary>
         /// Returns true only if this setting and all it's parent settings are true.
         /// </summary>
         private bool GetSettingValueRecursive(ASRSetting setting)
         {
             if (!setting.Value)
+            {
                 return false;
+            }
 
             if (setting.Parent == null)
+            {
                 return setting.Value;
+            }
 
             return GetSettingValueRecursive(Settings[setting.Parent]);
         }
@@ -118,7 +131,7 @@ namespace LiveSplit.AutoSplittingRuntime
     public class ASRSettingsBuilder
     {
         public string CurrentDefaultParent { get; set; }
-        private ASRSettings _s;
+        private readonly ASRSettings _s;
 
         public ASRSettingsBuilder(ASRSettings s)
         {
@@ -128,7 +141,9 @@ namespace LiveSplit.AutoSplittingRuntime
         public void Add(string id, bool default_value = true, string description = null, string parent = null)
         {
             if (parent == null)
+            {
                 parent = CurrentDefaultParent;
+            }
 
             _s.AddSetting(id, default_value, description, parent);
         }
@@ -136,7 +151,9 @@ namespace LiveSplit.AutoSplittingRuntime
         public void SetToolTip(string id, string text)
         {
             if (!_s.Settings.ContainsKey(id))
+            {
                 throw new ArgumentException($"Can't set tooltip, '{id}' is not a setting");
+            }
 
             _s.Settings[id].ToolTip = text;
         }
@@ -147,7 +164,7 @@ namespace LiveSplit.AutoSplittingRuntime
     /// </summary>
     public class ASRSettingsReader
     {
-        private ASRSettings _s;
+        private readonly ASRSettings _s;
 
         public ASRSettingsReader(ASRSettings s)
         {
